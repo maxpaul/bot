@@ -58,10 +58,7 @@
         <div class="col-sm-2">
           <input type="button" id="mixBut" value="Stop" />
         </div>
-        <div class="col-sm-2">
-          <p id="tmpTbl"></p>
-        </div>
-      </div>
+      </Div>
       <div class="row">
         <div class="col-sm-2">
           Count
@@ -85,28 +82,21 @@
         </div>
       </div>
       <div class="row">
-        <p id="ethTblHdr"></p>
-      </div>
+        <div class="scoreboard">
+                    scoreboard
+          testing xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        </div>
     </div>
   </section>
 
   <script>
   // initialize vars
   var mixBut = document.getElementById("mixBut");  // Start / Stop Button
-  var apiCalls = 0;  // count vars
-
-  // initialize table vars
-  var ethTblHdrVar = document.getElementById("ethTblHdr");
-  var ethRow = document.createElement("tr");
-  var ethCellTh = document.createElement("th");
-  var ethCellTd = document.createElement("td");
-  var ethTbl = document.createElement("table");
-  var ethTblHead = document.createElement("thead");
-  var ethTblBody= document.createElement("tbody");
+  var step = 0;  // count vars
 
   mixBut.addEventListener("click", Stop);  // initialize  Event Listener
 
-  window.onload = change;  //  on load start the automatic API fetch
+  //window.onload = change;  //  on load start the automatic API fetch
 
   // button event action Start toggle
   function Start(){
@@ -123,28 +113,7 @@
       mixBut.addEventListener("click", Start);
       mixBut.value = "Start";
   }
-  // function to create the table headers
-  function crtTblHeaders () {
 
-    let tableHeaders = ["Calls", "Balance", "Current Hash", "Report Hash","1 Hour Hash"]
-
-
-    //ethTblHdrVar.appendChild(ethTbl);  // bind table to html
-    //ethTbl.appendChild(ethTblHead);  // add head to table
-    //ethTbl.appendChild(ethTblBody);  // add body to table
-    //ethTbl.setAttribute('class', 'table');  // Add table styles
-    ethTblHead.appendChild(ethRow);  //add table row to head
-
-    // add text headers to columns and header row
-    for (var j = 0; j < 5; j++) {
-      ethCellTh = document.createElement("th");
-      var ethCellText = document.createTextNode(tableHeaders[j]);  // text header
-      ethCellTh.appendChild(ethCellText);  // add text header
-      ethRow.appendChild(ethCellTh);  // add text header to row
-      ethCellTh.setAttribute('scope', 'col'); // add stype to header
-    }
-    ethTblHead.appendChild(ethRow);  // add row to table head
-  }
 
   // delay function
   function delay(ms) {
@@ -155,32 +124,15 @@
   async function change() {
     let url = 'https://api.nanopool.org/v1/eth/user/0x544Cc6612E505F692eEb36500E97F930f818DBC7';
     let urlRptHash = 'https://api.nanopool.org/v1/eth/reportedhashrate/0x544Cc6612E505F692eEb36500E97F930f818DBC7';
-
-
-    ethTblHdrVar.appendChild(ethTbl);  // bind table to html
-    ethTbl.appendChild(ethTblHead);  // add head to table
-    ethTbl.appendChild(ethTblBody);  // add body to table
-    ethTbl.setAttribute('class', 'table');  // Add table styles
-    crtTblHeaders(); // create table headings
-
     do {
 
       //  fetch ETH general info
       fetch(url)
        .then(res => res.json())
        .then((out) => {
-      //   console.log('Checkout this JSON! ', out);
-      //   console.log('button value ', mixBut.value);
-
-         document.getElementById("cnt").innerHTML = apiCalls;
-         ethCellTd = document.createElement("td");
-         var ethCellText = document.createTextNode(out.data.balance);  // text header
-         ethCellTd.appendChild(ethCellText);  // add text header
-         ethRow.appendChild(ethCellTd);  // add text header to row
-         ethCellTd.setAttribute('scope', 'col'); // add stype to header
-
-         ethTblBody.appendChild(ethRow);  // add row to table head
-
+         console.log('Checkout this JSON! ', out);
+         console.log('button value ', mixBut.value);
+         document.getElementById("cnt").innerHTML = step;
          document.getElementById("ETH").innerHTML = out.data.balance;
          document.getElementById("currHash").innerHTML = out.data.hashrate;
          document.getElementById("1HrHash").innerHTML = out.data.avgHashrate.h1;
@@ -191,12 +143,12 @@
        fetch(urlRptHash)
         .then(res => res.json())
         .then((out) => {
-    //      console.log('Checkout this JSON! ', out);
+          console.log('Checkout this JSON! ', out);
           document.getElementById("rptHash").innerHTML = out.data;
         })
         .catch(err => { throw err });
 
-       apiCalls = apiCalls + 1;
+       step = step + 1;
        await delay(30000);
 
        // pause the API fetch(s) if in stop cycle
@@ -204,45 +156,43 @@
          await delay(3000);
        } while (mixBut.value == "Start");
 
-     } while (apiCalls > 0);
-
+     } while (step > 0);
   }
   //  table testing
-  // get the reference for the body
-  //var body = document.getElementsByTagName("body")[0];
 
-  var tempTbl = document.getElementById("tmpTbl");
-  // creates a <table> element and a <tbody> element
-  var tbl = document.createElement("table");
-  var tblBody = document.createElement("tbody");
+  const scoreDiv = document.querySelector("div.scoreboard") // Find the scoreboard div in our html
+  let tableHeaders = ["Global Ranking", "Username", "Score", "Time Alive [seconds]", "Accuracy [%]"]
 
-  // creating all cells
-  for (var i = 0; i < 2; i++) {
-    // creates a table row
-    var row = document.createElement("tr");
+  const createScoreboardTable = () => {
+    while (scoreDiv.firstChild) scoreDiv.removeChild(scoreDiv.firstChild) // Remove all children from scoreboard div (if any)
 
-    for (var j = 0; j < 2; j++) {
-      // Create a <td> element and a text node, make the text
-      // node the contents of the <td>, and put the <td> at
-      // the end of the table row
-      var cell = document.createElement("td");
-      var cellText = document.createTextNode("cell in row "+i+", column "+j);
-      cell.appendChild(cellText);
-      row.appendChild(cell);
-    }
+    let scoreboardTable = document.createElement('table') // Create the table itself
+    scoreboardTable.className = 'scoreboardTable'
 
-    // add the row to the end of the table body
-    tblBody.appendChild(row);
+    let scoreboardTableHead = document.createElement('thead') // Creates the table header group element
+    scoreboardTableHead.className = 'scoreboardTableHead'
+
+    let scoreboardTableHeaderRow = document.createElement('tr') // Creates the row that will contain the headers
+    scoreboardTableHeaderRow.className = 'scoreboardTableHeaderRow'
+
+    // Will iterate over all the strings in the tableHeader array and will append the header cells to the table header row
+    tableHeaders.forEach(header => {
+      let scoreHeader = document.createElement('th') // Creates the current header cell during a specific iteration
+      scoreHeader.innerText = header
+      scoreboardTableHeaderRow.append(scoreHeader) // Appends the current header cell to the header row
+    })
+
+    scoreboardTableHead.append(scoreboardTableHeaderRow) // Appends the header row to the table header group
+    elementscoreboardTable.append(scoreboardTableHead)
+
+    let scoreboardTableBody = document.createElement('tbody') // Creates the table body group element
+    scoreboardTableBody.className = "scoreboardTable-Body"
+    scoreboardTable.append(scoreboardTableBody) // Appends the table body group element to the table
+
+    scoreDiv.append(scoreboardTable) // Appends the table to the scoreboard div
   }
 
-  // put the <tbody> in the <table>
-  tbl.appendChild(tblBody);
-  // appends <table> into <body>
-  tempTbl.appendChild(tbl);
-  // sets the border attribute of tbl to 2;
-  tbl.setAttribute("border", "2");
-
-
+  
 
   </script>
   <!-- Bootstrap core JavaScript -->
